@@ -11,7 +11,7 @@
 #import <OpenGL/gl.h>
 #import <OpenGL/glext.h>
 
-@interface AVPlayerHAPLayer ()
+@interface AVPlayerHapLayer ()
 {
     CGLContextObj context;
     
@@ -31,7 +31,7 @@
 
 @end
 
-@implementation AVPlayerHAPLayer
+@implementation AVPlayerHapLayer
 
 - (instancetype) init
 {

@@ -9,7 +9,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface AVPlayerHAPLayer : CAOpenGLLayer
+@interface AVPlayerHapLayer : CAOpenGLLayer
 
 @property (readonly) AVPlayer* player;
 @property (nonatomic, readonly, getter=isReadyForDisplay) BOOL readyForDisplay;
