@@ -22,7 +22,7 @@
 #import "AVAssetAdditions.h"
 
 #import "AVAssetWriterHapInput.h"
-
+#import "AVPlayerHAPLayer.h"
 
 
 
