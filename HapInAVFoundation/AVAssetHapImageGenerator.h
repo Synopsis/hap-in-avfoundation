@@ -6,8 +6,7 @@
 //  Copyright © 2017 v002. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
+#import "HapInAVFoundation.h"
 @interface AVAssetHapImageGenerator : NSObject
 
 + (AVAssetHapImageGenerator*) assetHapImageGeneratorWithAsset:(AVAsset*)asset;
