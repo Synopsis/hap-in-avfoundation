@@ -331,13 +331,13 @@
         
         self.currentDXTFrame = dxtFrame;
         
-        CGSize tmpSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
+        CGSize imageSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
 //        int width = tmpSize.width;
 //        int height = tmpSize.height;
         
-        tmpSize = NSSizeToCGSize([self.currentDXTFrame dxtImgSize]);
-        GLuint roundedWidth = tmpSize.width;
-        GLuint roundedHeight = tmpSize.height;
+        CGSize dxtSize = NSSizeToCGSize([self.currentDXTFrame dxtImgSize]);
+        GLuint roundedWidth = dxtSize.width;
+        GLuint roundedHeight = dxtSize.height;
         
         if (roundedWidth % 4 != 0 || roundedHeight % 4 != 0)
         {
@@ -413,7 +413,7 @@
             if(baseAddress == NULL)
                 return;
             
-            if ( !CGSizeEqualToSize(hapTextureSize, tmpSize) && !CGSizeEqualToSize(CGSizeZero, tmpSize)  )
+            if ( !CGSizeEqualToSize(hapTextureSize, imageSize) && !CGSizeEqualToSize(CGSizeZero, imageSize)  )
             {
                 
                 if(hapTextureIDs[texIndex])
@@ -425,7 +425,7 @@
 //                NSLog(@"-- HAP -- drawHAPInCGLContext Create Textures");
                 glGenTextures(1, &(hapTextureIDs[texIndex]));
                 
-                hapTextureSize = tmpSize;
+                hapTextureSize = imageSize;
 
                 glBindTexture(GL_TEXTURE_2D, hapTextureIDs[texIndex]);
 
