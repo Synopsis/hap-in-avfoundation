@@ -29,6 +29,7 @@
 @property (nonatomic, readwrite, getter=isReadyForDisplay) BOOL readyForDisplay;
 @property (readwrite) BOOL useHAP;
 
+@property (nonatomic, readwrite) CGRect videoRect;
 @end
 
 @implementation AVPlayerHapLayer
@@ -169,6 +170,11 @@
         currentTextureRef = NULL;
     }
     
+    if(self.currentDXTFrame)
+    {
+        self.currentDXTFrame = nil;
+    }
+    
     if(self.player.currentItem)
         [self.player.currentItem removeObserver:self forKeyPath:@"status"];
     
@@ -230,6 +236,7 @@
         if(currentTextureRef != NULL)
         {
             CVOpenGLTextureRelease(currentTextureRef);
+            currentTextureRef = NULL;
         }
 
         CVOpenGLTextureCacheFlush(textureCache, 0);
@@ -242,6 +249,7 @@
     
     if(currentTextureRef != NULL)
     {
+//        CVOpenGLTextureRetain(currentTextureRef);
         GLfloat texCoords[8];
         
         GLuint texture = CVOpenGLTextureGetName(currentTextureRef);
@@ -290,6 +298,8 @@
         
         CGSize displaySize = CVImageBufferGetDisplaySize(currentTextureRef);
         
+        self.videoRect = AVMakeRectWithAspectRatioInsideRect(displaySize, self.bounds);
+
         GLfloat aspect = displaySize.height/displaySize.width;
         
         GLfloat vertexCoords[8] =
@@ -308,6 +318,8 @@
         glDisableClientState( GL_TEXTURE_COORD_ARRAY );
         glDisableClientState(GL_VERTEX_ARRAY);
         
+       // CVOpenGLTextureRelease(currentTextureRef);
+
 //        [super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
     }
 }
@@ -327,7 +339,6 @@
     if(dxtFrame)
     {
 //        NSLog(@"-- HAP -- drawHAPInCGLContext Have New DXT Frame");
-        
         
         self.currentDXTFrame = dxtFrame;
         
@@ -427,6 +438,8 @@
                 
                 hapTextureSize = imageSize;
 
+                self.videoRect = AVMakeRectWithAspectRatioInsideRect(hapTextureSize, self.bounds);
+                
                 glBindTexture(GL_TEXTURE_2D, hapTextureIDs[texIndex]);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

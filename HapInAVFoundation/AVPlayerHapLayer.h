@@ -12,7 +12,11 @@
 @interface AVPlayerHapLayer : CAOpenGLLayer
 
 @property (readonly) AVPlayer* player;
+
 @property (nonatomic, readonly, getter=isReadyForDisplay) BOOL readyForDisplay;
+
+@property (nonatomic, readonly) CGRect videoRect;
+
 
 - (void) replacePlayerItemWithItem:(AVPlayerItem*)item;
 - (void) replacePlayerItemWithHAPItem:(AVPlayerItem*)item;
