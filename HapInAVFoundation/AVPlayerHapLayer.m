@@ -249,6 +249,8 @@
                                                    currentPixelBuffer,
                                                    NULL,
                                                    &currentTextureRef);
+        
+        CVPixelBufferRelease(currentPixelBuffer);
     }
     
     if(currentTextureRef != NULL)
