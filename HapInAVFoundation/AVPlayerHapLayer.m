@@ -20,6 +20,9 @@
     
     GLuint hapTextureIDs[2];
     CGSize hapTextureSize;
+    
+    CGAffineTransform currentTransform;
+    float currentAngle;
 }
 
 @property (readwrite) AVPlayer* player;
@@ -178,6 +181,7 @@
     if(self.player.currentItem)
         [self.player.currentItem removeObserver:self forKeyPath:@"status"];
     
+
     [item addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
     
     [self.player replaceCurrentItemWithPlayerItem:item];
@@ -298,9 +302,11 @@
         
         CGSize displaySize = CVImageBufferGetDisplaySize(currentTextureRef);
         
-        self.videoRect = AVMakeRectWithAspectRatioInsideRect(displaySize, self.bounds);
+        self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(displaySize, self.bounds), currentTransform);
 
         GLfloat aspect = displaySize.height/displaySize.width;
+        
+        
         
         GLfloat vertexCoords[8] =
         {
@@ -310,6 +316,10 @@
             -1.0,	 aspect
         };
         
+        glPushMatrix();
+        
+        glRotatef(-currentAngle, 0, 0, 1);
+
         glEnableClientState( GL_TEXTURE_COORD_ARRAY );
         glTexCoordPointer(2, GL_FLOAT, 0, texCoords );
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -318,6 +328,8 @@
         glDisableClientState( GL_TEXTURE_COORD_ARRAY );
         glDisableClientState(GL_VERTEX_ARRAY);
         
+        glPopMatrix();
+
        // CVOpenGLTextureRelease(currentTextureRef);
 
 //        [super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
@@ -438,7 +450,7 @@
                 
                 hapTextureSize = imageSize;
 
-                self.videoRect = AVMakeRectWithAspectRatioInsideRect(hapTextureSize, self.bounds);
+                self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(hapTextureSize, self.bounds), currentTransform);
                 
                 glBindTexture(GL_TEXTURE_2D, hapTextureIDs[texIndex]);
 
@@ -497,6 +509,10 @@
             -1.0,	 aspect
         };
         
+        glPushMatrix();
+        
+        glRotatef(-currentAngle, 0, 0, 1);
+        
         glEnableClientState( GL_TEXTURE_COORD_ARRAY );
         glTexCoordPointer(2, GL_FLOAT, 0, texCoords );
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -504,6 +520,8 @@
         glDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
         glDisableClientState( GL_TEXTURE_COORD_ARRAY );
         glDisableClientState(GL_VERTEX_ARRAY);
+        
+        glPopMatrix();
     }
     else
     {
@@ -523,6 +541,19 @@
         }
         else
             self.readyForDisplay = NO;
+        
+        AVAssetTrack* videoTrack = [[item.asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
+        if(videoTrack)
+        {
+            currentTransform = videoTrack.preferredTransform;
+        }
+        else
+        {
+            currentTransform = CGAffineTransformIdentity;
+        }
+
+        currentAngle = [self angleFromAffineTransform:currentTransform];
+
     }
     else
     {
@@ -564,6 +595,24 @@
     [self.player pause];
 }
 
+
+- (float) angleFromAffineTransform:(CGAffineTransform)transform
+{
+    float radians = atan2(transform.b, transform.d);
+    return radians * (180 / M_PI);
+}
+
+- (CGFloat) xscaleFromAffineTransform:(CGAffineTransform)transform
+{
+    CGAffineTransform t = transform;
+    return sqrt(t.a * t.a + t.c * t.c);
+}
+
+- (CGFloat) yscaleFromAffineTransform:(CGAffineTransform)transform
+{
+    CGAffineTransform t = transform;
+    return sqrt(t.b * t.b + t.d * t.d);
+}
 
 
 
