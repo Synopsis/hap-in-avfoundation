@@ -446,7 +446,7 @@
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
                
                 glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, roundedWidth, roundedHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
 
@@ -458,8 +458,8 @@
 
             }
             
-//            glTextureRangeAPPLE(GL_TEXTURE_2D, newDataLength, baseAddress);
-//            glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
+            glTextureRangeAPPLE(GL_TEXTURE_2D, newDataLength, baseAddress);
+            glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
             
             glCompressedTexSubImage2D(GL_TEXTURE_2D,
                                       0,
