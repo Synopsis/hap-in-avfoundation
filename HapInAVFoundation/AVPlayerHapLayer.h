@@ -17,7 +17,6 @@
 
 @property (nonatomic, readonly) CGRect videoRect;
 
-
 - (void) replacePlayerItemWithItem:(AVPlayerItem*)item;
 - (void) replacePlayerItemWithHAPItem:(AVPlayerItem*)item;
 

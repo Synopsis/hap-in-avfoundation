@@ -90,7 +90,7 @@
     NSDictionary* cacheAttributes = @{ (NSString*)kCVOpenGLTextureCacheChromaSamplingModeKey : (NSString*)kCVOpenGLTextureCacheChromaSamplingModeBestPerformance};
     
     CVOpenGLTextureCacheCreate(kCFAllocatorDefault,
-                               CFBridgingRetain(cacheAttributes),
+                               (__bridge CFDictionaryRef _Nullable)(cacheAttributes),
                                context,
                                pf,
                                NULL,
@@ -226,7 +226,6 @@
         const GLubyte* errorString = glGetString(error);
         NSLog(@"GL Error: %04x %s", error, errorString);
     }
-
 }
 
 - (void) drawPixelBufferInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts
@@ -307,8 +306,6 @@
         self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(displaySize, self.bounds), currentTransform);
 
         GLfloat aspect = displaySize.height/displaySize.width;
-        
-        
         
         GLfloat vertexCoords[8] =
         {
