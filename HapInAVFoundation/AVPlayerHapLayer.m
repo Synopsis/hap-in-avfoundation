@@ -265,6 +265,8 @@
 //        CVOpenGLTextureRetain(currentTextureRef);
         GLfloat texCoords[8];
         
+        glUseProgram(0);
+        
         GLuint texture = CVOpenGLTextureGetName(currentTextureRef);
         GLenum target = CVOpenGLTextureGetTarget(currentTextureRef);
         
@@ -505,8 +507,11 @@
        && !CGSizeEqualToSize(CGSizeZero, hapTextureSize))
     {
 //        NSLog(@"-- HAP -- drawHAPInCGLContext Using Existing Texture / Frame");
-        
-//        glBindTexture(GL_TEXTURE_2D, hapTextureIDs[0]);
+
+//        if(hapTextureIDs[1] != 0)
+//            glBindTexture(GL_TEXTURE_2D, hapTextureIDs[1]);
+
+        glBindTexture(GL_TEXTURE_2D, hapTextureIDs[0]);
         
         GLfloat aspect = (GLfloat)hapTextureSize.height / (GLfloat)hapTextureSize.width;
         GLfloat texCoords[8] =
