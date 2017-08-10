@@ -7,7 +7,7 @@
 //
 
 #import "HapInAVFoundation.h"
-#import "AVPlayerHAPLayer.h"
+#import "AVPlayerHapLayer.h"
 #import <OpenGL/gl.h>
 #import <OpenGL/glext.h>
 
@@ -17,6 +17,9 @@
     
     CVOpenGLTextureRef currentTextureRef;
     CVOpenGLTextureCacheRef textureCache;
+    
+//    GLhandleARB hapYCogShader;
+    GLuint hapYCogShader;
     
     GLuint hapTextureIDs[2];
     CGSize hapTextureSize;
@@ -48,6 +51,10 @@
         self.player.volume = 0;
         
         hapTextureSize = CGSizeZero;
+        hapYCogShader = 0;
+        hapTextureIDs[0] = 0;
+        hapTextureIDs[1] = 0;
+        
     }
     
     return self;
@@ -74,8 +81,6 @@
 
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pf
 {
-//    NSLog(@"-- HAP -- copyCGLContextForPixelFormat copyCGLContextForPixelFormat copyCGLContextForPixelFormat");
-    
     if(context != NULL)
     {
         [self releaseGLResources:context];
@@ -84,8 +89,8 @@
         context = NULL;
     }
     
-    
     CGLCreateContext(pf, NULL, &context);
+
     
     NSDictionary* cacheAttributes = @{ (NSString*)kCVOpenGLTextureCacheChromaSamplingModeKey : (NSString*)kCVOpenGLTextureCacheChromaSamplingModeBestPerformance};
     
@@ -95,7 +100,9 @@
                                pf,
                                NULL,
                                &textureCache);
-    
+
+    CGLSetCurrentContext(context);
+    hapYCogShader = [self loadShader];
     
     return context;
 }
@@ -104,17 +111,12 @@
 {
     assert(context == ctx);
 
-//    NSLog(@"-- HAP -- releaseCGLContext releaseCGLContext releaseCGLContext");
-
     [self releaseGLResources:ctx];
     [super releaseCGLContext:ctx];
 }
 
 - (void) releaseGLResources:(CGLContextObj)ctx
 {
-    
-//    NSLog(@"-- HAP -- releaseGLResources releaseGLResources releaseGLResources");
-
     assert(context == ctx);
 
     CGLSetCurrentContext(ctx);
@@ -136,6 +138,12 @@
         glDeleteTextures(2, hapTextureIDs);
         hapTextureIDs[0] = 0;
         hapTextureIDs[1] = 0;
+    }
+    
+    if (hapYCogShader != 0)
+    {
+        glDeleteObjectARB(hapYCogShader);
+        hapYCogShader = 0;
     }
     
     hapTextureSize = CGSizeZero;
@@ -434,6 +442,13 @@
             GLvoid *baseAddress = dxtBaseAddresses[texIndex];
             if(baseAddress == NULL)
                 return;
+        
+            if(needsShader)
+            {
+                glUseProgram(hapYCogShader);
+            }
+            else
+                glUseProgram(0);
             
             if ( !CGSizeEqualToSize(hapTextureSize, imageSize) && !CGSizeEqualToSize(CGSizeZero, imageSize)  )
             {
@@ -485,11 +500,13 @@
         
     }
     
-    if(hapTextureIDs[0] != 0 && !CGSizeEqualToSize(CGSizeZero, hapTextureSize))
+    if(self.currentDXTFrame != nil
+       && hapTextureIDs[0] != 0
+       && !CGSizeEqualToSize(CGSizeZero, hapTextureSize))
     {
 //        NSLog(@"-- HAP -- drawHAPInCGLContext Using Existing Texture / Frame");
-
-        glBindTexture(GL_TEXTURE_2D, hapTextureIDs[0]);
+        
+//        glBindTexture(GL_TEXTURE_2D, hapTextureIDs[0]);
         
         GLfloat aspect = (GLfloat)hapTextureSize.height / (GLfloat)hapTextureSize.width;
         GLfloat texCoords[8] =
@@ -614,5 +631,80 @@
 }
 
 
+- (GLuint)loadShaderOfType:(GLenum)type named:(NSString *)name
+{
+    NSString *extension = (type == GL_VERTEX_SHADER ? @"vert" : @"frag");
+    NSString  *path = [[NSBundle bundleForClass:[self class]] pathForResource:name
+                                                                       ofType:extension];
+    NSString *source = nil;
+    if (path) source = [NSString stringWithContentsOfFile:path usedEncoding:nil error:nil];
+    
+    GLint shaderCompiled = 0;
+    GLuint shaderObject = 0;
+    
+    if(source != nil)
+    {
+        const GLchar *glSource = [source cStringUsingEncoding:NSASCIIStringEncoding];
+        
+        shaderObject = glCreateShader(type);
+        glShaderSource(shaderObject, 1, &glSource, NULL);
+        glCompileShader(shaderObject);
+        
+        glGetShaderiv(shaderObject,
+                      GL_COMPILE_STATUS,
+                      &shaderCompiled);
+        
+        if(shaderCompiled == 0 )
+        {
+            glDeleteShader(shaderObject);
+            shaderObject = 0;
+        }
+    }
+    return shaderObject;
+}
+
+
+- (GLuint) loadShader
+{
+    GLuint program = 0;
+    
+    GLuint vert = [self loadShaderOfType:GL_VERTEX_SHADER named:@"ScaledCoCgYToRGBA"];
+    GLuint frag = [self loadShaderOfType:GL_FRAGMENT_SHADER named:@"ScaledCoCgYToRGBA"];
+    
+    GLint programLinked = 0;
+    if (frag && vert)
+    {
+        program = glCreateProgram();
+        glAttachShader(program, vert);
+        glAttachShader(program, frag);
+        glLinkProgram(program);
+        glGetProgramiv(program,
+                      GL_LINK_STATUS,
+                      &programLinked);
+        if(programLinked == 0 )
+        {
+            glDeleteProgram(program);
+            program = 0;
+        }
+        else	{
+            glUseProgram(program);
+            GLint samplerLoc = -1;
+            samplerLoc = glGetUniformLocation(program, "cocgsy_src");
+            if (samplerLoc >= 0)
+                glUniform1i(samplerLoc,0);
+            samplerLoc = -1;
+            samplerLoc = glGetUniformLocation(program, "alpha_src");
+            if (samplerLoc >= 0)
+                glUniform1i(samplerLoc,1);
+            glUseProgram(0);
+        }
+    }
+    if (frag)
+        glDeleteShader(frag);
+    if (vert)
+        glDeleteShader(vert);
+    
+    return program;
+}
 
 @end
