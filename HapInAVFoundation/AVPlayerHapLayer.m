@@ -196,7 +196,7 @@
 }
 
 - (void)drawInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf
-            forLayerTime:(CFTimeInterval)t displayTime:(nullable const CVTimeStamp *)ts
+            forLayerTime:(CFTimeInterval)t displayTime:(nonnull const CVTimeStamp *)ts
 {
     assert(context == ctx);
     
@@ -551,7 +551,7 @@
 
 }
 
-- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)c
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary*)change context:(void *)c
 {
     if([object isKindOfClass:[AVPlayerItem class]])
     {
