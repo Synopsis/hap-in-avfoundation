@@ -22,7 +22,8 @@
 #import "AVAssetAdditions.h"
 
 #import "AVAssetWriterHapInput.h"
-
+#import "AVPlayerHapLayer.h"
+#import "AVAssetHapImageGenerator.h"
 
 
 
