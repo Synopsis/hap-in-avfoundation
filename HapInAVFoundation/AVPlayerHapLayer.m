@@ -142,7 +142,7 @@
     
     if (hapYCogShader != 0)
     {
-        glDeleteObjectARB(hapYCogShader);
+        glDeleteProgram(hapYCogShader);
         hapYCogShader = 0;
     }
     
@@ -195,19 +195,28 @@
     [self.player replaceCurrentItemWithPlayerItem:item];
 }
 
+// lame optimization hack
+- (void) display
+{
+    if(!self.readyForDisplay)
+        return;
+    
+    [super display];
+}
+
 - (void)drawInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf
-            forLayerTime:(CFTimeInterval)t displayTime:(nonnull const CVTimeStamp *)ts
+            forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts
 {
     assert(context == ctx);
     
-    CGLSetCurrentContext(ctx);
+    if(!self.readyForDisplay)
+        return;
     
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
     glPushAttrib(GL_TEXTURE_BIT);
     
-    if(self.readyForDisplay)
     {
         if(self.useHAP)
         {
@@ -218,10 +227,10 @@
             [self drawPixelBufferInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
         }
     }
-    else
-    {
-//        NSLog(@"-- HAP -- draw requested but not ready for display");
-    }
+//    else
+//    {
+////        NSLog(@"-- HAP -- draw requested but not ready for display");
+//    }
     
     glPopAttrib();
     
@@ -559,6 +568,7 @@
         if(item.status == AVPlayerItemStatusReadyToPlay)
         {
             self.readyForDisplay = YES;
+            self.opacity = 1.0;
         }
         else
             self.readyForDisplay = NO;
@@ -593,7 +603,7 @@
 
 - (void) endOptimize
 {
-    if(self.readyForDisplay)
+//    if(self.readyForDisplay)
     {
         self.opacity = 1.0;
     }
