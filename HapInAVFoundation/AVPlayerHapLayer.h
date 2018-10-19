@@ -23,6 +23,4 @@
 - (void) play;
 - (void) pause;
 
-- (void) beginOptimize;
-- (void) endOptimize;
 @end

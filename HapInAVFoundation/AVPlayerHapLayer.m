@@ -592,40 +592,17 @@
     }
 }
 
-- (void) beginOptimize
-{
-    [self pause];
-    
-    self.opacity = 0.0;
-    
-    self.readyForDisplay = NO;
-}
-
-- (void) endOptimize
-{
-//    if(self.readyForDisplay)
-    {
-        self.opacity = 1.0;
-    }
-}
-
-
 - (void) play
 {
-//    NSLog(@"-- HAP -- Got Play");
-
     [self.player play];
     self.asynchronous = YES;
 }
 
 - (void) pause
 {
-//    NSLog(@"-- HAP -- Got Pause");
-
     self.asynchronous = NO;
     [self.player pause];
 }
-
 
 - (float) angleFromAffineTransform:(CGAffineTransform)transform
 {
