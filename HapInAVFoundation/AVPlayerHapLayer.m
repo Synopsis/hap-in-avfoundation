@@ -198,8 +198,8 @@
 // lame optimization hack
 - (void) display
 {
-    if(!self.readyForDisplay)
-        return;
+//    if(!self.readyForDisplay)
+//        return;
     
     [super display];
 }
@@ -565,13 +565,6 @@
     if([object isKindOfClass:[AVPlayerItem class]])
     {
         AVPlayerItem* item = (AVPlayerItem*) object;
-        if(item.status == AVPlayerItemStatusReadyToPlay)
-        {
-            self.readyForDisplay = YES;
-            self.opacity = 1.0;
-        }
-        else
-            self.readyForDisplay = NO;
         
         AVAssetTrack* videoTrack = [[item.asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
         if(videoTrack)
@@ -585,6 +578,14 @@
 
         currentAngle = [self angleFromAffineTransform:currentTransform];
 
+        if(item.status == AVPlayerItemStatusReadyToPlay)
+        {
+            self.readyForDisplay = YES;
+            [self setNeedsDisplay];
+        }
+        else
+            self.readyForDisplay = NO;
+        
     }
     else
     {
