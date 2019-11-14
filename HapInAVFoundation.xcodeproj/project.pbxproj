@@ -98,6 +98,11 @@
 		1ACF5DEC1A3E4127005DDF19 /* PixelFormats.c in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */; };
 		1ACF5DED1A3E41FF005DDF19 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
 		1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */; };
+		1AF650E6237DFCE700DB9506 /* AVPlayerHapLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AF650E2237DFCE700DB9506 /* AVPlayerHapLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1AF650E7237DFCE700DB9506 /* AVAssetHapImageGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AF650E3237DFCE700DB9506 /* AVAssetHapImageGenerator.m */; };
+		1AF650E8237DFCE700DB9506 /* AVAssetHapImageGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AF650E4237DFCE700DB9506 /* AVAssetHapImageGenerator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1AF650E9237DFCE700DB9506 /* AVPlayerHapLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AF650E5237DFCE700DB9506 /* AVPlayerHapLayer.m */; };
+		1AF650EF237DFD5600DB9506 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AF650EE237DFD5500DB9506 /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -283,6 +288,11 @@
 		1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapEncoderFrame.m; sourceTree = "<group>"; };
 		1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = PixelFormats.c; path = source/PixelFormats.c; sourceTree = SOURCE_ROOT; };
 		1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = ../../../../System/Library/Frameworks/VideoToolbox.framework; sourceTree = "<group>"; };
+		1AF650E2237DFCE700DB9506 /* AVPlayerHapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVPlayerHapLayer.h; sourceTree = "<group>"; };
+		1AF650E3237DFCE700DB9506 /* AVAssetHapImageGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAssetHapImageGenerator.m; sourceTree = "<group>"; };
+		1AF650E4237DFCE700DB9506 /* AVAssetHapImageGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAssetHapImageGenerator.h; sourceTree = "<group>"; };
+		1AF650E5237DFCE700DB9506 /* AVPlayerHapLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVPlayerHapLayer.m; sourceTree = "<group>"; };
+		1AF650EE237DFD5500DB9506 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -310,6 +320,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AF650EF237DFD5600DB9506 /* QuartzCore.framework in Frameworks */,
 				1A680E2A1A39F67E007678E5 /* CoreMedia.framework in Frameworks */,
 				1A680E241A39CFFF007678E5 /* AVFoundation.framework in Frameworks */,
 				1A6060751A38D929008E693F /* Carbon.framework in Frameworks */,
@@ -450,6 +461,7 @@
 		1A6060711A38D8F5008E693F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1AF650EE237DFD5500DB9506 /* QuartzCore.framework */,
 				1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */,
 				1A680E291A39F67E007678E5 /* CoreMedia.framework */,
 				1A680E231A39CFFF007678E5 /* AVFoundation.framework */,
@@ -474,6 +486,10 @@
 				1AB26EF41A3B59D5001360D7 /* AVPlayerItemAdditions.m */,
 				1A5A4DE21A54A047005C961F /* AVAssetAdditions.h */,
 				1A5A4DE31A54A047005C961F /* AVAssetAdditions.m */,
+				1AF650E4237DFCE700DB9506 /* AVAssetHapImageGenerator.h */,
+				1AF650E3237DFCE700DB9506 /* AVAssetHapImageGenerator.m */,
+				1AF650E2237DFCE700DB9506 /* AVPlayerHapLayer.h */,
+				1AF650E5237DFCE700DB9506 /* AVPlayerHapLayer.m */,
 			);
 			name = "Decode (playback)";
 			sourceTree = "<group>";
@@ -585,6 +601,7 @@
 				1AC0CA191A437C2A00A9BC2C /* HapEncoderFrame.h in Headers */,
 				1A97F5D31A38AC9800E0DC74 /* hap.h in Headers */,
 				1A0535FB1A38C9FD005B47BD /* squish-c.h in Headers */,
+				1AF650E8237DFCE700DB9506 /* AVAssetHapImageGenerator.h in Headers */,
 				1A6060731A38D91A008E693F /* HapInAVFoundation_Prefix.pch in Headers */,
 				1AB1C9A01A38CAFA00688AB4 /* Utility.h in Headers */,
 				1A0536181A38CA11005B47BD /* YCoCgDXTEncoder.h in Headers */,
@@ -592,6 +609,7 @@
 				1A0536221A38CA5D005B47BD /* ImageMath.h in Headers */,
 				1A0536241A38CA5D005B47BD /* YCoCg.h in Headers */,
 				1AAE52E01CFDDB8600BA5205 /* SquishRGTC1Decoder.h in Headers */,
+				1AF650E6237DFCE700DB9506 /* AVPlayerHapLayer.h in Headers */,
 				1A05360C1A38CA11005B47BD /* DXTBlocks.h in Headers */,
 				1A05360E1A38CA11005B47BD /* DXTEncoder.h in Headers */,
 				1A0536161A38CA11005B47BD /* YCoCgDXT.h in Headers */,
@@ -687,6 +705,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -803,6 +822,8 @@
 				1AC0CA1A1A437C2A00A9BC2C /* HapEncoderFrame.m in Sources */,
 				1AB1C99F1A38CAFA00688AB4 /* Utility.c in Sources */,
 				1AB26EF61A3B59D5001360D7 /* AVPlayerItemAdditions.m in Sources */,
+				1AF650E7237DFCE700DB9506 /* AVAssetHapImageGenerator.m in Sources */,
+				1AF650E9237DFCE700DB9506 /* AVPlayerHapLayer.m in Sources */,
 				1A0536171A38CA11005B47BD /* YCoCgDXTEncoder.c in Sources */,
 				1A4A76B01A55AFCC0060CBAC /* AVAssetReaderHapTrackOutput.m in Sources */,
 				1A05360B1A38CA11005B47BD /* DXTBlocks.c in Sources */,
