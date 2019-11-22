@@ -393,8 +393,14 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 				?	NULL
 				:	CFDataCreateWithBytesNoCopy(NULL, rgbMem, rgbPoolLength, _HIAVFMemPoolAllocator);
 			[newDecoderFrame setUserInfo:[NSArray arrayWithObjects:(NSData *)dxtDataRef, (dxtAlphaDataRef==NULL)?(id)[NSNull null]:(NSData *)dxtAlphaDataRef, (rgbDataRef==NULL)?[NSNull null]:(NSData *)rgbDataRef, nil]];
-			CFRelease(dxtDataRef);
-			CFRelease(rgbDataRef);
+			if (dxtDataRef != NULL)	{
+				CFRelease(dxtDataRef);
+				dxtDataRef = NULL;
+			}
+			if (rgbDataRef != NULL)	{
+				CFRelease(rgbDataRef);
+				rgbDataRef = NULL;
+			}
 		}
 		else	{
 			CFDataRef		dxtDataRef = CFDataCreateWithBytesNoCopy(NULL, dxtMem[0], dxtPoolLengths[0], _HIAVFMemPoolAllocator);
@@ -416,9 +422,11 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	if (newDecoderFrame==nil)
 		NSLog(@"\t\terr: decoder frame nil, %s",__func__);
 	else	{
+        LOCK(&propertyLock);
 		[decodeFrames addObject:newDecoderFrame];
 		while ([decodeFrames count] > MAXDECODEFRAMES)
 			[decodeFrames removeObjectAtIndex:0];
+        UNLOCK(&propertyLock);
 		
 		[newDecoderFrame release];
 		newDecoderFrame = nil;
@@ -505,6 +513,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 	}
 	
 	//	find a frame to decode
+    LOCK(&propertyLock);
 	HapDecoderFrame		*frameToDecode = nil;
 	frameToDecode = (decodeFrames==nil || [decodeFrames count]<1) ? nil : [[decodeFrames objectAtIndex:0] retain];
 	if (frameToDecode == nil)	{
@@ -693,7 +702,7 @@ void HapMTDecode(HapDecodeWorkFunction function, void *p, unsigned int count, vo
 					//	else it's a "normal" (non-YCoCg) DXT texture format, use the GL decoder
 					else if (dxtTextureFormats[0]==HapTextureFormat_RGB_DXT1 || dxtTextureFormats[0]==HapTextureFormat_RGBA_DXT5)	{
 						//	make a GL decoder
-						void			*glDecoder = HapCodecGLCreateDecoder(imgSize.width, imgSize.height, dxtTextureFormats[0]);
+						void			*glDecoder = HapCodecGLCreateDecoder(dxtImgSize.width, dxtImgSize.height, dxtTextureFormats[0]);
 						if (glDecoder != NULL)	{
 							//	decode the DXT data into the rgb buffer
 							//NSLog(@"\t\tcalling %ld with userInfo %@",rgbDataSize/(NSUInteger)dxtImgSize.height,[n userInfo]);
