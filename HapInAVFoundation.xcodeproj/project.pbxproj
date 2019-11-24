@@ -132,6 +132,9 @@
 		1A6D0E76207E4AF2005CCB1A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
 		1A6D0E77207E4AF9005CCB1A /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A6060741A38D929008E693F /* Carbon.framework */; };
 		1A6D0E78207E4BA9005CCB1A /* HapInAVFoundation_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 1A6060721A38D91A008E693F /* HapInAVFoundation_Prefix.pch */; };
+		1A76041B23899CD4006A5C0E /* ScaledCoCgYPlusAToRGBA.frag in Resources */ = {isa = PBXBuildFile; fileRef = 1AB665ED1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag */; };
+		1A76041C23899CD4006A5C0E /* ScaledCoCgYToRGBA.frag in Resources */ = {isa = PBXBuildFile; fileRef = 1A0518691A3E228700FC80D2 /* ScaledCoCgYToRGBA.frag */; };
+		1A76041D23899CD4006A5C0E /* ScaledCoCgYToRGBA.vert in Resources */ = {isa = PBXBuildFile; fileRef = 1A05186A1A3E228700FC80D2 /* ScaledCoCgYToRGBA.vert */; };
 		1A8904FD1A38D25400A6CE71 /* libsquish.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0535F11A38C9C4005B47BD /* libsquish.dylib */; };
 		1A8904FE1A38D25A00A6CE71 /* libsquish.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A0535F11A38C9C4005B47BD /* libsquish.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		1A97F5B11A38ABBF00E0DC74 /* HapInAVFoundation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5B01A38ABBF00E0DC74 /* HapInAVFoundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -165,9 +168,13 @@
 		1AB665EE1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag in Resources */ = {isa = PBXBuildFile; fileRef = 1AB665ED1C96CDA500FC1B9D /* ScaledCoCgYPlusAToRGBA.frag */; };
 		1AC0CA191A437C2A00A9BC2C /* HapEncoderFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AC0CA171A437C2A00A9BC2C /* HapEncoderFrame.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AC0CA1A1A437C2A00A9BC2C /* HapEncoderFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */; };
+		1AC54D932389B35300E40D94 /* HapPixelBufferTexture.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A05185C1A3E17CF00FC80D2 /* HapPixelBufferTexture.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1AC54D942389B35300E40D94 /* HapPixelBufferTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A05185D1A3E17CF00FC80D2 /* HapPixelBufferTexture.m */; };
 		1ACF5DEC1A3E4127005DDF19 /* PixelFormats.c in Sources */ = {isa = PBXBuildFile; fileRef = 1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */; };
 		1ACF5DED1A3E41FF005DDF19 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */; };
 		1AE092DC1AFE96F4004E866B /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */; };
+		1AEDF4882389F6BF002CBA53 /* VVSizingTool.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AEDF4862389F6BE002CBA53 /* VVSizingTool.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1AEDF4892389F6BF002CBA53 /* VVSizingTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AEDF4872389F6BE002CBA53 /* VVSizingTool.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -407,6 +414,8 @@
 		1AC0CA181A437C2A00A9BC2C /* HapEncoderFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HapEncoderFrame.m; sourceTree = "<group>"; };
 		1ACF5DEB1A3E4127005DDF19 /* PixelFormats.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = PixelFormats.c; path = source/PixelFormats.c; sourceTree = SOURCE_ROOT; };
 		1AE092DB1AFE96F4004E866B /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = ../../../../System/Library/Frameworks/VideoToolbox.framework; sourceTree = "<group>"; };
+		1AEDF4862389F6BE002CBA53 /* VVSizingTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VVSizingTool.h; sourceTree = "<group>"; };
+		1AEDF4872389F6BE002CBA53 /* VVSizingTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VVSizingTool.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -632,6 +641,8 @@
 				1AAF36CA238854EE00169C93 /* AVAssetHapImageGenerator.m */,
 				1AAF36C9238854EE00169C93 /* AVPlayerHapLayer.h */,
 				1AAF36CB238854EE00169C93 /* AVPlayerHapLayer.m */,
+				1AEDF4862389F6BE002CBA53 /* VVSizingTool.h */,
+				1AEDF4872389F6BE002CBA53 /* VVSizingTool.m */,
 			);
 			name = "Decode (playback)";
 			sourceTree = "<group>";
@@ -789,8 +800,10 @@
 				1AAF36CC238854EE00169C93 /* AVAssetHapImageGenerator.h in Headers */,
 				1AAF36CD238854EE00169C93 /* AVPlayerHapLayer.h in Headers */,
 				1A97F5D31A38AC9800E0DC74 /* hap.h in Headers */,
+				1AC54D932389B35300E40D94 /* HapPixelBufferTexture.h in Headers */,
 				1A0535FB1A38C9FD005B47BD /* squish-c.h in Headers */,
 				1A6060731A38D91A008E693F /* HapInAVFoundation_Prefix.pch in Headers */,
+				1AEDF4882389F6BF002CBA53 /* VVSizingTool.h in Headers */,
 				1AB1C9A01A38CAFA00688AB4 /* Utility.h in Headers */,
 				1A0536181A38CA11005B47BD /* YCoCgDXTEncoder.h in Headers */,
 				1A0536141A38CA11005B47BD /* SquishEncoder.h in Headers */,
@@ -1025,6 +1038,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A76041C23899CD4006A5C0E /* ScaledCoCgYToRGBA.frag in Resources */,
+				1A76041B23899CD4006A5C0E /* ScaledCoCgYPlusAToRGBA.frag in Resources */,
+				1A76041D23899CD4006A5C0E /* ScaledCoCgYToRGBA.vert in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1128,6 +1144,8 @@
 				1AB26EC81A3B3AA4001360D7 /* AVPlayerItemHapDXTOutput.m in Sources */,
 				1AB26ECC1A3B3AE1001360D7 /* HapDecoderFrame.m in Sources */,
 				1A0535FA1A38C9FD005B47BD /* squish-c.cpp in Sources */,
+				1AEDF4892389F6BF002CBA53 /* VVSizingTool.m in Sources */,
+				1AC54D942389B35300E40D94 /* HapPixelBufferTexture.m in Sources */,
 				1AAE52E21CFDDB8B00BA5205 /* SquishRGTC1Decoder.c in Sources */,
 				1A05360F1A38CA11005B47BD /* GLDXTEncoder.c in Sources */,
 				1A0536211A38CA5D005B47BD /* ImageMath.c in Sources */,
@@ -1440,7 +1458,7 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -1488,6 +1506,7 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;

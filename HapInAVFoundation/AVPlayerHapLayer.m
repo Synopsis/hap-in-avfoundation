@@ -10,21 +10,22 @@
 #import "AVPlayerHapLayer.h"
 #import <OpenGL/gl.h>
 #import <OpenGL/glext.h>
+#import "VVSizingTool.h"
+
+
+
 
 @interface AVPlayerHapLayer ()	{
 	CGLContextObj context;
 	
-	CVOpenGLTextureRef currentTextureRef;
-	CVOpenGLTextureCacheRef textureCache;
+	CVOpenGLTextureRef			currentTextureRef;
+	CVOpenGLTextureCacheRef		textureCache;
 	
-//	  GLhandleARB hapYCogShader;
-	GLuint hapYCogShader;
+	HapPixelBufferTexture		*hapTex;
 	
-	GLuint hapTextureIDs[2];
-	CGSize hapTextureSize;
-	
-	CGAffineTransform currentTransform;
-	float currentAngle;
+	CGSize					hapImageSize;
+	CGAffineTransform		currentTransform;
+	float					currentAngle;
 }
 
 @property (readwrite) AVPlayer* player;
@@ -33,11 +34,14 @@
 @property (readwrite) HapDecoderFrame* currentDXTFrame;
 @property (nonatomic, readwrite, getter=isReadyForDisplay) BOOL readyForDisplay;
 @property (readwrite) BOOL useHAP;
-
 @property (nonatomic, readwrite) CGRect videoRect;
 @end
 
+
+
+
 @implementation AVPlayerHapLayer
+
 
 - (instancetype) init	{
 	self = [super init];
@@ -45,17 +49,33 @@
 		self.player = [[AVPlayer alloc] init];
 		self.player.volume = 0;
 		
-		hapTextureSize = CGSizeZero;
-		hapYCogShader = 0;
-		hapTextureIDs[0] = 0;
-		hapTextureIDs[1] = 0;
-		
+		hapImageSize = CGSizeZero;
+		hapTex = nil;
 	}
 	
 	return self;
 }
 
-- (CGLPixelFormatObj)copyCGLPixelFormatForDisplayMask:(uint32_t)mask	{
+- (void) dealloc	{
+	if (context != NULL)	{
+		[self releaseGLResources:context];
+		CGLReleaseContext(context);
+		context = NULL;
+	}
+	
+	[self.player release];
+	self.player = nil;
+	self.videoOutput = nil;
+	self.hapOutput = nil;
+	if (self.currentDXTFrame != nil)	{
+		[self.currentDXTFrame release];
+		self.currentDXTFrame = nil;
+	}
+	
+	[super dealloc];
+}
+
+- (CGLPixelFormatObj) copyCGLPixelFormatForDisplayMask:(uint32_t)mask	{
 	const CGLPixelFormatAttribute attributes[] = {
 		kCGLPFAOpenGLProfile, kCGLOGLPVersion_Legacy,
 		kCGLPFADoubleBuffer,
@@ -73,10 +93,9 @@
 	return pf;
 }
 
-- (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pf	{
+- (CGLContextObj) copyCGLContextForPixelFormat:(CGLPixelFormatObj)pf	{
 	if(context != NULL)	{
 		[self releaseGLResources:context];
-		
 		CGLReleaseContext(context);
 		context = NULL;
 	}
@@ -95,7 +114,6 @@
 		&textureCache);
 
 	CGLSetCurrentContext(context);
-	hapYCogShader = [self loadShader];
 	
 	return context;
 }
@@ -122,18 +140,12 @@
 		currentTextureRef = NULL;
 	}
 	
-	if(hapTextureIDs)	{
-		glDeleteTextures(2, hapTextureIDs);
-		hapTextureIDs[0] = 0;
-		hapTextureIDs[1] = 0;
+	if (hapTex != nil)	{
+		[hapTex release];
+		hapTex = nil;
 	}
 	
-	if (hapYCogShader != 0)	{
-		glDeleteProgram(hapYCogShader);
-		hapYCogShader = 0;
-	}
-	
-	hapTextureSize = CGSizeZero;
+	hapImageSize = CGSizeZero;
 	
 }
 
@@ -164,7 +176,8 @@
 		currentTextureRef = NULL;
 	}
 	
-	if(self.currentDXTFrame)	{
+	if (self.currentDXTFrame != nil)	{
+		[self.currentDXTFrame release];
 		self.currentDXTFrame = nil;
 	}
 	
@@ -185,12 +198,22 @@
 	[super display];
 }
 
+
+
 - (void)drawInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts	{
+	//NSLog(@"%s",__func__);
 	assert(context == ctx);
 	
 	if(!self.readyForDisplay)
 		return;
-	
+	/*
+	NSRect		tmpRect = NSRectFromCGRect([self frame]);
+	NSLog(@"\tframe is %@",NSStringFromRect(tmpRect));
+	tmpRect = NSRectFromCGRect([self bounds]);
+	NSLog(@"\tbounds are %@",NSStringFromRect(tmpRect));
+	NSSize		tmpSize = NSSizeFromCGSize([self preferredFrameSize]);
+	NSLog(@"\tpreferredFrameSize is %@",NSStringFromSize(tmpSize));
+	*/
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
@@ -208,20 +231,37 @@
 	glPopAttrib();
 	
 	[super drawInCGLContext:ctx pixelFormat:pf forLayerTime:t displayTime:ts];
-
-	GLenum error = glGetError();
 	
-	if(error)
-	{
-		const GLubyte* errorString = glGetString(error);
-		NSLog(@"GL Error: %04x %s", error, errorString);
+	[self glErrCheck];
+}
+- (BOOL) glErrCheck	{
+	int			err = glGetError();
+	if (err != 0)	{
+		NSString		*humanReadable = nil;
+		switch(err){
+		case 0x0: humanReadable = @"no error"; break;
+		case 0x500: humanReadable = @"invalid enum"; break;
+		case 0x501: humanReadable = @"invalid value"; break;
+		case 0x502: humanReadable = @"invalid operation"; break;
+		case 0x503: humanReadable = @"stack overflow"; break;
+		case 0x504: humanReadable = @"stack underflow"; break;
+		case 0x505: humanReadable = @"out of memory"; break;
+		case 0x506: humanReadable = @"invalid framebuffer"; break;
+		case 0x507: humanReadable = @"context lost"; break;
+		case 0x8031: humanReadable = @"table too large"; break;
+		default: break;
+		}
+		NSLog(@"encountered GL error %@",humanReadable);
+		return YES;
 	}
+	return NO;
 }
 
 - (void) drawPixelBufferInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts	{
+	//NSLog(@"%s",__func__);
 	CMTime time = [self.videoOutput itemTimeForHostTime:t];
 	
-	if([self.videoOutput hasNewPixelBufferForItemTime:time])	{
+	if ([self.videoOutput hasNewPixelBufferForItemTime:time])	{
 		CVPixelBufferRef currentPixelBuffer = [self.videoOutput copyPixelBufferForItemTime:time itemTimeForDisplay:NULL];
 		
 		if(currentTextureRef != NULL)	{
@@ -294,12 +334,18 @@
 
 		GLfloat aspect = displaySize.height/displaySize.width;
 		
-		GLfloat vertexCoords[8] =
-		{
-			-1.0,	-aspect,
-			1.0,	-aspect,
-			1.0,	 aspect,
-			-1.0,	 aspect
+		//GLfloat vertexCoords[8] =
+		//{
+		//	-1.0,	-aspect,
+		//	1.0,	-aspect,
+		//	1.0,	 aspect,
+		//	-1.0,	 aspect
+		//};
+		GLfloat		vertexCoords[8] = {
+			-1., -1.,
+			1., -1.,
+			1., 1.,
+			-1., 1.
 		};
 		
 		glPushMatrix();
@@ -321,169 +367,77 @@
 
 
 - (void) drawHAPInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts	{
+	//NSLog(@"%s",__func__);
+	
+	if (hapTex != nil && [hapTex context] != ctx)	{
+		[hapTex release];
+		hapTex = nil;
+	}
+	if (hapTex == nil)	{
+		hapTex = [[HapPixelBufferTexture alloc] initWithContext:ctx];
+	}
+	
+	if (hapTex == nil)	{
+		NSLog(@"ERR: hapTex is nil, bailing, %s",__func__);
+		return;
+	}
 	
 	CMTime frameTime = [self.hapOutput itemTimeForHostTime:t];
 	
-	HapDecoderFrame *dxtFrame = [self.hapOutput allocFrameClosestToTime:frameTime];
-		
-	glEnable(GL_TEXTURE_2D);
-
+	HapDecoderFrame *dxtFrame = [self.hapOutput allocFrameForTime:frameTime];
+	
+	if (hapTex != nil)
+		[hapTex setDecodedFrame:dxtFrame];
+	
+	CGSize imageSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
+	
 	if(dxtFrame)	{
-		
+		if (self.currentDXTFrame != nil)	{
+			[self.currentDXTFrame release];
+			self.currentDXTFrame = nil;
+		}
 		self.currentDXTFrame = dxtFrame;
 		
 		CGSize imageSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
-		
-		CGSize dxtSize = NSSizeToCGSize([self.currentDXTFrame dxtImgSize]);
-		GLuint roundedWidth = dxtSize.width;
-		GLuint roundedHeight = dxtSize.height;
-		
-		if (roundedWidth % 4 != 0 || roundedHeight % 4 != 0)	{
-			return;
+		if ( !CGSizeEqualToSize(hapImageSize, imageSize) && !CGSizeEqualToSize(CGSizeZero, imageSize)	 )	{
+			hapImageSize = imageSize;
+			self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(hapImageSize, self.bounds), currentTransform);
 		}
-
-		GLenum internalFormat;
-		int textureCount = [self.currentDXTFrame dxtPlaneCount];
-		void **dxtBaseAddresses = [self.currentDXTFrame dxtDatas];
-		size_t *dxtDataSizes = [self.currentDXTFrame dxtDataSizes];
-		OSType *dxtPixelFormats = [self.currentDXTFrame dxtPixelFormats];
-		
-		BOOL needsShader = NO;
-		
-		for (int texIndex = 0; texIndex < textureCount; ++texIndex)	{
-			unsigned int bitsPerPixel = 0;
-			
-			switch (dxtPixelFormats[texIndex])	{
-			case kHapCVPixelFormat_RGB_DXT1:
-				internalFormat = HapTextureFormat_RGB_DXT1;
-				bitsPerPixel = 4;
-				break;
-			case kHapCVPixelFormat_RGBA_DXT5:
-				internalFormat = HapTextureFormat_RGBA_DXT5;
-				bitsPerPixel = 8;
-				break;
-			case kHapCVPixelFormat_YCoCg_DXT5:
-				internalFormat = HapTextureFormat_RGBA_DXT5;
-				bitsPerPixel = 8;
-				needsShader = true;
-				break;
-			case kHapCVPixelFormat_CoCgXY:
-				if (texIndex==0)
-				{
-					internalFormat = HapTextureFormat_RGBA_DXT5;
-					bitsPerPixel = 8;
-				}
-				else
-				{
-					internalFormat = HapTextureFormat_A_RGTC1;
-					bitsPerPixel = 4;
-				}
-				needsShader = true;
-				break;
-			case kHapCVPixelFormat_YCoCg_DXT5_A_RGTC1:
-				if (texIndex==0)
-				{
-					internalFormat = HapTextureFormat_RGBA_DXT5;
-					bitsPerPixel = 8;
-				}
-				else
-				{
-					internalFormat = HapTextureFormat_A_RGTC1;
-					bitsPerPixel = 4;
-				}
-				needsShader = true;
-				break;
-			case kHapCVPixelFormat_A_RGTC1:
-				internalFormat = HapTextureFormat_A_RGTC1;
-				bitsPerPixel = 4;
-				break;
-			default:
-				return;
-				break;
-			}
-			
-			size_t			bytesPerRow = (roundedWidth * bitsPerPixel) / 8;
-			GLsizei			newDataLength = (int)(bytesPerRow * roundedHeight);
-			size_t			actualBufferSize = dxtDataSizes[texIndex];
-			
-			GLvoid *baseAddress = dxtBaseAddresses[texIndex];
-			if(baseAddress == NULL)
-				return;
-		
-			if(needsShader)
-			{
-				glUseProgram(hapYCogShader);
-			}
-			else
-				glUseProgram(0);
-			
-			if ( !CGSizeEqualToSize(hapTextureSize, imageSize) && !CGSizeEqualToSize(CGSizeZero, imageSize)	 )	{
-				
-				if(hapTextureIDs[texIndex])	{
-					glDeleteTextures(1, &hapTextureIDs[texIndex]);
-				}
-				
-				glGenTextures(1, &(hapTextureIDs[texIndex]));
-				
-				hapTextureSize = imageSize;
-
-				self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(hapTextureSize, self.bounds), currentTransform);
-				
-				glBindTexture(GL_TEXTURE_2D, hapTextureIDs[texIndex]);
-
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_STORAGE_HINT_APPLE , GL_STORAGE_SHARED_APPLE);
-			   
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, roundedWidth, roundedHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
-
-			}
-			
-			else	{
-				glBindTexture(GL_TEXTURE_2D, hapTextureIDs[texIndex]);
-
-			}
-			
-			glTextureRangeAPPLE(GL_TEXTURE_2D, newDataLength, baseAddress);
-			glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
-			
-			glCompressedTexSubImage2D(
-				GL_TEXTURE_2D,
-				0,
-				0,
-				0,
-				roundedWidth,
-				roundedHeight,
-				internalFormat,
-				newDataLength,
-				baseAddress);
-		}
-		
 	}
 	
 	if(self.currentDXTFrame != nil
-	&& hapTextureIDs[0] != 0
-	&& !CGSizeEqualToSize(CGSizeZero, hapTextureSize))
+	//&& hapTextureIDs[0] != 0
+	&& !CGSizeEqualToSize(CGSizeZero, hapImageSize))
 	{
-
-		glBindTexture(GL_TEXTURE_2D, hapTextureIDs[0]);
 		
-		GLfloat aspect = (GLfloat)hapTextureSize.height / (GLfloat)hapTextureSize.width;
+		glUseProgram([hapTex shaderProgramObject]);
+		for (int i=0; i<[hapTex textureCount]; ++i)	{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, [hapTex textureNames][i]);
+		}
+		
+		CGSize		hapTextureSize = CGSizeMake([hapTex textureWidths][0], [hapTex textureHeights][0]);
+		
 		GLfloat texCoords[8] = {
-			0.0, 1.0,
-			1.0, 1.0,
-			1.0, 0.0,
+		//	0.0, 1.0,
+		//	1.0, 1.0,
+		//	1.0, 0.0,
+		//	0.0, 0.0
+			0.0, hapImageSize.height/hapTextureSize.height,
+			hapImageSize.width/hapTextureSize.width, hapImageSize.height/hapTextureSize.height,
+			hapImageSize.width/hapTextureSize.width, 0.0,
 			0.0, 0.0
 		};
 		
-		GLfloat vertexCoords[8] = {
-			-1.0,	-aspect,
-			1.0,	-aspect,
-			1.0,	 aspect,
-			-1.0,	 aspect
+		GLfloat		vertexCoords[8] = {
+			-1., -1.,
+			1., -1.,
+			1., 1.,
+			-1., 1.
 		};
+		
+		
+		glEnable(GL_TEXTURE_2D);
 		
 		glPushMatrix();
 		
@@ -518,8 +472,15 @@
 
 		currentAngle = [self angleFromAffineTransform:currentTransform];
 
-		if(item.status == AVPlayerItemStatusReadyToPlay)	{
-			self.readyForDisplay = YES;
+		if (item.status == AVPlayerItemStatusReadyToPlay)	{
+			[self.player
+				seekToTime:kCMTimeZero
+				toleranceBefore:kCMTimeZero
+				toleranceAfter:kCMTimeZero
+				completionHandler:^(BOOL finished) {
+					self.readyForDisplay = YES;
+					[self setNeedsDisplay];
+				}];
 			[self setNeedsDisplay];
 		}
 		else

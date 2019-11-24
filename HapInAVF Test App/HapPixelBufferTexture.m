@@ -389,4 +389,9 @@
 	}
 	return shaderObject;
 }
+
+- (CGLContextObj) context	{
+	return cgl_ctx;
+}
+
 @end
