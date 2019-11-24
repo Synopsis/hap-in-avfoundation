@@ -33,10 +33,10 @@
 
 void HapCodecDXTReadBlockRGBA(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int src_bytes_per_row);
 
-//#if !defined(HAP_SSSE3_ALWAYS_AVAILABLE)
+#if !defined(HAP_SSSE3_ALWAYS_AVAILABLE)
 int HapCodecHasSSSE3(void);
 void HapCodecDXTReadBlockBGRAScalar(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int src_bytes_per_row);
-//#endif
+#endif
 
 void HapCodecDXTReadBlockBGRASSSE3(const uint8_t *copy_src, uint8_t *copy_dst, unsigned int src_bytes_per_row);
 

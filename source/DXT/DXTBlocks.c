@@ -38,7 +38,7 @@ void HapCodecDXTReadBlockRGBA(const uint8_t *copy_src, uint8_t *copy_dst, unsign
     }
 }
 
-//#if !defined(HAP_SSSE3_ALWAYS_AVAILABLE)
+#if !defined(HAP_SSSE3_ALWAYS_AVAILABLE)
 
 #if defined(_WIN32)
 #include <immintrin.h>
@@ -89,4 +89,4 @@ void HapCodecDXTReadBlockBGRAScalar(const uint8_t *copy_src, uint8_t *copy_dst, 
     }
 }
 
-//#endif // !defined(HAP_SSSE3_ALWAYS_AVAILABLE)
+#endif // !defined(HAP_SSSE3_ALWAYS_AVAILABLE)
