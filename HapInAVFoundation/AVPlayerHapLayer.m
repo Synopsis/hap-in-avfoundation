@@ -386,20 +386,17 @@
 	CMTime frameTime = [self.hapOutput itemTimeForHostTime:t];
 	
 	HapDecoderFrame *dxtFrame = [self.hapOutput allocFrameForTime:frameTime];
+	if (self.currentDXTFrame != nil)	{
+		[self.currentDXTFrame release];
+		self.currentDXTFrame = nil;
+	}
+	self.currentDXTFrame = dxtFrame;
 	
 	if (hapTex != nil)
 		[hapTex setDecodedFrame:dxtFrame];
 	
-	CGSize imageSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
-	
-	if(dxtFrame)	{
-		if (self.currentDXTFrame != nil)	{
-			[self.currentDXTFrame release];
-			self.currentDXTFrame = nil;
-		}
-		self.currentDXTFrame = dxtFrame;
-		
-		CGSize imageSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
+	if (self.currentDXTFrame != nil)	{
+		CGSize		imageSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
 		if ( !CGSizeEqualToSize(hapImageSize, imageSize) && !CGSizeEqualToSize(CGSizeZero, imageSize)	 )	{
 			hapImageSize = imageSize;
 			self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(hapImageSize, self.bounds), currentTransform);
