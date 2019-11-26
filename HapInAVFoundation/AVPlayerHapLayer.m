@@ -204,6 +204,9 @@
 	//NSLog(@"%s",__func__);
 	assert(context == ctx);
 	
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	
 	if(!self.readyForDisplay)
 		return;
 	/*
@@ -214,8 +217,6 @@
 	NSSize		tmpSize = NSSizeFromCGSize([self preferredFrameSize]);
 	NSLog(@"\tpreferredFrameSize is %@",NSStringFromSize(tmpSize));
 	*/
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT);
 	
 	glPushAttrib(GL_TEXTURE_BIT);
 	

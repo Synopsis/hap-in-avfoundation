@@ -142,6 +142,7 @@
 		1A97F5D31A38AC9800E0DC74 /* hap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A97F5D11A38AC9800E0DC74 /* hap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1A97F5D61A38AD0700E0DC74 /* libsnappy.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; };
 		1A97F5DB1A38AD3000E0DC74 /* libsnappy.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A97F5CE1A38AC8000E0DC74 /* libsnappy.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		1AA37A0E238C8C8F0090520B /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AA37A0D238C8C8F0090520B /* AppKit.framework */; };
 		1AA70B14207E6B72005AC524 /* VVAVFTranscoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2F1A6524100065403A /* VVAVFTranscoder.m */; };
 		1AA70B15207E6B7A005AC524 /* VVAVFExportBasicSettingsCtrlr.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A3BAC2C1A6524100065403A /* VVAVFExportBasicSettingsCtrlr.m */; };
 		1AA70B18207E6BDE005AC524 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A60606F1A38D8DE008E693F /* Accelerate.framework */; };
@@ -390,6 +391,7 @@
 		1A97F5C91A38AC8000E0DC74 /* snappy.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = snappy.xcodeproj; path = "external/snappy/snappy-mac/snappy.xcodeproj"; sourceTree = "<group>"; };
 		1A97F5D01A38AC9800E0DC74 /* hap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hap.c; path = external/hap/hap.c; sourceTree = "<group>"; };
 		1A97F5D11A38AC9800E0DC74 /* hap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hap.h; path = external/hap/hap.h; sourceTree = "<group>"; };
+		1AA37A0D238C8C8F0090520B /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1AABDE8A207E544000D8F504 /* AVFtoHap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AVFtoHap; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AABDE8C207E544000D8F504 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		1AAE52DF1CFDDB8600BA5205 /* SquishRGTC1Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SquishRGTC1Decoder.h; path = source/SquishRGTC1Decoder.h; sourceTree = SOURCE_ROOT; };
@@ -459,6 +461,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AA37A0E238C8C8F0090520B /* AppKit.framework in Frameworks */,
 				1AAF36D12388550200169C93 /* QuartzCore.framework in Frameworks */,
 				1A680E2A1A39F67E007678E5 /* CoreMedia.framework in Frameworks */,
 				1A680E241A39CFFF007678E5 /* AVFoundation.framework in Frameworks */,
@@ -611,6 +614,7 @@
 		1A6060711A38D8F5008E693F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1AA37A0D238C8C8F0090520B /* AppKit.framework */,
 				1AAF36D02388550200169C93 /* QuartzCore.framework */,
 				1A38F87420E64AFA00F47ACA /* Sparkle.framework */,
 				1A0518671A3E1DAB00FC80D2 /* CoreVideo.framework */,
