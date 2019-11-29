@@ -45,17 +45,17 @@
 	}
 	else	{
 		CMTime			bufferTime = CMSampleBufferGetPresentationTimeStamp(hapBuffer);
-//		NSLog(@"\t\tbufferTime is %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,bufferTime) autorelease]);
+		//NSLog(@"\t\tbufferTime is %@",[(id)CMTimeCopyDescription(kCFAllocatorDefault,bufferTime) autorelease]);
 		//	if the time on the sample buffer from the super is invalid, i've read all the samples
-//		if (CMTIME_COMPARE_INLINE(bufferTime,==,kCMTimeInvalid))	{
-//		
-//		}
+		if (CMTIME_COMPARE_INLINE(bufferTime,==,kCMTimeInvalid))	{
+		
+		}
 		//	else if i already tried to read this sample time
-//		else if (CMTIME_COMPARE_INLINE(bufferTime,==,lastCopiedBufferTime))	{
-//			NSLog(@"\t\terr: already copied buffer for time %@ in %s, returning nil",[(id)CMTimeCopyDescription(kCFAllocatorDefault,bufferTime) autorelease],__func__);
-//		}
+		else if (CMTIME_COMPARE_INLINE(bufferTime,==,lastCopiedBufferTime))	{
+			NSLog(@"\t\terr: already copied buffer for time %@ in %s, returning nil",[(id)CMTimeCopyDescription(kCFAllocatorDefault,bufferTime) autorelease],__func__);
+		}
 		//	else there's a valid time on the sample buffer- i should decode a frame for this time, and return a sample buffer with the decoded RGB data!
-//		else	{
+		else	{
 			HapDecoderFrame			*hapFrame = [hapDXTOutput allocFrameForTime:bufferTime];
 			if (hapFrame==nil)	{
 				NSLog(@"\t\terr:hapFrame nil in %s",__func__);
@@ -76,9 +76,23 @@
 		}
 		CFRelease(hapBuffer);
 		hapBuffer = NULL;
-//	}
+	}
 	return returnMe;
+	
+}
 
+
+- (BOOL) outputAsRGB	{
+	OSSpinLockLock(&hapLock);
+	BOOL		returnMe = (hapDXTOutput==nil) ? NO : [hapDXTOutput outputAsRGB];
+	OSSpinLockUnlock(&hapLock);
+	return returnMe;
+}
+- (void) setOutputAsRGB:(BOOL)n	{
+	OSSpinLockLock(&hapLock);
+	if (hapDXTOutput != nil)
+		[hapDXTOutput setOutputAsRGB:n];
+	OSSpinLockUnlock(&hapLock);
 }
 
 

@@ -1,4 +1,5 @@
 #import "AVAssetWriterHapInput.h"
+#import <Accelerate/Accelerate.h>
 #include "HapPlatform.h"
 #import "HapCodecSubTypes.h"
 #import "PixelFormats.h"
@@ -32,6 +33,7 @@ NSString *const			AVVideoCodecHapQ = @"HapY";
 NSString *const			AVVideoCodecHapQAlpha = @"HapM";
 NSString *const			AVVideoCodecHapAlphaOnly = @"HapA";
 NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
+NSString *const			AVFallbackFPSKey = @"AVFallbackFPSKey";
 
 #define FourCCLog(n,f) NSLog(@"%@, %c%c%c%c",n,(int)((f>>24)&0xFF),(int)((f>>16)&0xFF),(int)((f>>8)&0xFF),(int)((f>>0)&0xFF))
 
@@ -66,6 +68,13 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 	if (_HIAVFMemPoolAllocator==NULL)
 		_HIAVFMemPoolAllocator = CMMemoryPoolGetAllocator(_HIAVFMemPool);
 	OSSpinLockUnlock(&_HIAVFMemPoolLock);
+}
+- (id) initWithMediaType:(AVMediaType)mediaType outputSettings:(NSDictionary<NSString *,id> *)outputSettings	{
+	NSLog(@"**** ERR: DO NOT USE THIS INIT METHOD (%s)",__func__);
+	NSLog(@"AVFoundation does not officially recognize the Hap codec");
+	NSLog(@"Please use -[AVAssetWriterHapInput initWithOutputSettings:] instead");
+	[self release];
+	return nil;
 }
 - (id) initWithOutputSettings:(NSDictionary *)n	{
 	self = [super initWithMediaType:AVMediaTypeVideo outputSettings:nil];
@@ -175,6 +184,9 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		exportChunkCounts[0] = (chunkNum==nil) ? 1 : [chunkNum intValue];
 		exportChunkCounts[0] = fmaxl(fminl(exportChunkCounts[0], HAPQMAXCHUNKS), 1);
 		exportChunkCounts[1] = exportChunkCounts[0];
+		//	if there's a default FPS key, use it
+		NSNumber		*fallbackFPSNum = (propertiesDict==nil) ? nil : [n objectForKey:AVFallbackFPSKey];
+		fallbackFPS = (fallbackFPSNum==nil) ? 0.0 : [fallbackFPSNum doubleValue];
 		
 		//	figure out the max dxt frame size in bytes
 		NSUInteger		dxtFrameSizeInBytes[2];
@@ -375,26 +387,62 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 	
 	
 	//	assemble a block that will encode the passed pixel buffer- i'll either be dispatching this block (via GCD) or executing it immediately...
-	void			(^encodeBlock)() = ^(){
+    void			(^encodeBlock)(void) = ^(){
 		//NSLog(@"%s",__func__);
 		//	if there's a pixel buffer to encode, let's take care of that first
 		if (pb!=NULL)	{
-			//	lock the base address of the pixel buffer, get a ptr to the raw pixel data- i'll either be converting it or encoding it
+			//	lock the base address of the pixel buffer
 			CVPixelBufferLockBaseAddress(pb,kHapCodecCVPixelBufferLockFlags);
 			
+			//	get the size of the image in the cvpixelbuffer, we need to compare it to the export size to determine if we need to do a resize...
+			NSSize			pbSize = NSMakeSize(CVPixelBufferGetWidth(pb),CVPixelBufferGetHeight(pb));
+			
+			//	get a ptr to the raw pixel data- i'll either be resizing/converting it or encoding this ptr.
 			void			*sourceBuffer = CVPixelBufferGetBaseAddress(pb);
 			size_t			sourceBufferBytesPerRow = CVPixelBufferGetBytesPerRow(pb);
+			
+			//	allocate the resize buffer if i need it
+			void			*resizeBuffer = nil;
+			if (!NSEqualSizes(pbSize, exportImgSize))	{
+				//	make a vImage struct for the pixel buffer we were passed
+				vImage_Buffer		pbImage = {
+					.data = sourceBuffer,
+					.height = pbSize.height,
+					.width = pbSize.width,
+					.rowBytes = sourceBufferBytesPerRow
+				};
+				//	make the resize buffer
+				size_t			resizeBufferSize = encoderInputPxlFmtBytesPerRow[0] * exportImgSize.height;
+				resizeBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, resizeBufferSize, 0);
+				//	make a vImage struct for the resize buffer we just allocated
+				vImage_Buffer		resizeImage = {
+					.data = resizeBuffer,
+					.height = exportImgSize.height,
+					.width = exportImgSize.width,
+					.rowBytes = encoderInputPxlFmtBytesPerRow[0]
+				};
+				//	scale the pixel buffer's vImage to the resize buffer's vImage
+				vImage_Error		vErr = vImageScale_ARGB8888(&pbImage, &resizeImage, NULL, kvImageHighQualityResampling | kvImageDoNotTile);
+				if (vErr != kvImageNoError)
+					NSLog(@"\t\terr %ld scaling image in %s",vErr,__func__);
+				else	{
+					//	update the sourceBuffer- we just resized the buffer we were passed, so it should have the same pixel format
+					sourceBuffer = resizeImage.data;
+					sourceBufferBytesPerRow = resizeImage.rowBytes;
+				}
+			}
+			
+			//	allocate any format conversion buffers i may need
 			void			*_formatConvertBuffers[2];
 			_formatConvertBuffers[0] = nil;
 			_formatConvertBuffers[1] = nil;
 			void			**formatConvertBuffers = _formatConvertBuffers;	//	this exists because we can't refer to arrays on the stack from within blocks
-			
-			//	allocate any format conversion buffers i may need
 			for (int i=0; i<exportPixelFormatsCount; ++i)	{
 				if (sourceFormat != encoderInputPxlFmts[i])	{
 					formatConvertBuffers[i] = CFAllocatorAllocate(_HIAVFMemPoolAllocator, formatConvertPoolLengths[i], 0);
 				}
 			}
+			
 			//	allocate the DXT buffer (or buffers) i'll be creating
 			void			*dxtBuffer = CFAllocatorAllocate(_HIAVFMemPoolAllocator, dxtBufferPoolLengths[0], 0);
 			void			*dxtAlphaBuffer = NULL;
@@ -636,9 +684,19 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 							else	{
 								//	make a CMFormatDescriptionRef that will describe the frame i'm supplying
 								CMFormatDescriptionRef		desc = NULL;
+                                int depth;
+                                switch (exportCodecType) {
+                                    case kHapAlphaCodecSubType:
+                                    case kHapYCoCgACodecSubType:
+                                        depth = 32;
+                                        break;
+                                    default:
+                                        depth = 24;
+                                        break;
+                                }
 								NSDictionary				*bufferExtensions = [NSDictionary dictionaryWithObjectsAndKeys:
 									[NSNumber numberWithDouble:2.199996948242188], kCMFormatDescriptionExtension_GammaLevel,
-									[NSNumber numberWithInt:((exportCodecType==kHapAlphaCodecSubType)?32:24)],kCMFormatDescriptionExtension_Depth,
+									[NSNumber numberWithInt:depth],kCMFormatDescriptionExtension_Depth,
 									@"Hap",kCMFormatDescriptionExtension_FormatName,
 									[NSNumber numberWithInt:2], kCMFormatDescriptionExtension_RevisionLevel,
 									[NSNumber numberWithInt:512], kCMFormatDescriptionExtension_SpatialQuality,
@@ -690,6 +748,10 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 			if (dxtAlphaBuffer!=nil)	{
 				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, dxtAlphaBuffer);
 				dxtAlphaBuffer = nil;
+			}
+			if (resizeBuffer != nil)	{
+				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, resizeBuffer);
+				resizeBuffer = nil;
 			}
 			if (formatConvertBuffers[0]!=nil)	{
 				CFAllocatorDeallocate(_HIAVFMemPoolAllocator, formatConvertBuffers[0]);
@@ -849,7 +911,24 @@ NSString *const			AVHapVideoChunkCountKey = @"AVHapVideoChunkCountKey";
 		
 		if (lastFrame != nil)	{
 			//	make a hap sample buffer, append it
-			CMSampleBufferRef	hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:[self lastEncodedDuration].value];
+			CMSampleBufferRef	hapSampleBuffer = NULL;
+			CMTime				tmpTime = [self lastEncodedDuration];
+			//	if there's no 'lastEncodedDuration'...
+			if (tmpTime.value == 0)	{
+				//	try to use the fallback FPS- if there isn't one, just use a value of 1...
+				if (fallbackFPS <= 0.0)	{
+					hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:1];
+				}
+				//	else there's a fallback FPS- calculate an appropriate time value given the fallback FPS and the last frame's timescale
+				else	{
+					hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:(int)round((1.0/fallbackFPS) / (1.0/(double)[lastFrame presentationTime].timescale))];
+				}
+			}
+			//	else there's a 'lastEncodedDuration'- use it...
+			else	{
+				hapSampleBuffer = [lastFrame allocCMSampleBufferWithDurationTimeValue:tmpTime.value];
+			}
+			
 			if (hapSampleBuffer==NULL)
 				NSLog(@"\t\terr: couldn't make sample buffer from frame duration, %s",__func__);
 			else	{

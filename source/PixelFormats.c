@@ -25,6 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "PixelFormats.h"
 #if defined(__APPLE__)
 #import <CoreVideo/CoreVideo.h>
 #define HAP_BZERO(x,y) bzero((x),(y))
@@ -35,7 +36,6 @@
 #define HAP_BZERO(x,y) ZeroMemory((x),(y))
 #endif
 #include "Utility.h"
-#include "PixelFormats.h"
 
 static void HapCodecAddBlockDescription(CFMutableDictionaryRef dictionary, unsigned int bits_per_pixel)
 {

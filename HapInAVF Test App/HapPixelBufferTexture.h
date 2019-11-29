@@ -104,4 +104,6 @@ The decoded frame to draw.  setting this creates a GL texture (deleting the old 
 
 // @property (readonly) BOOL textureIsFlipped; // is always YES
 
+@property (readonly) CGLContextObj context;
+
 @end

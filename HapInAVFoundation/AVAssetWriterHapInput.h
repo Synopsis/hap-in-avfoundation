@@ -16,8 +16,10 @@ extern NSString *const			AVVideoCodecHapQAlpha;
 extern NSString *const			AVVideoCodecHapAlphaOnly;
 //	the hapQ codec offers the ability to create "chunked" files- this string is the key in the compression properties dict (AVVideoCompressionPropertiesKey) at which the # of chunks is stored.  if the value at this key is nil or < 1, it is assumed to be 1.
 extern NSString *const			AVHapVideoChunkCountKey;
+//	the value associated with this key is expected to be a double: this key-value pair is expected to be stored in the top level of the properties dict.  this value is only used if you create a single-frame movie.  if you're creating single-frame movies then the framework won't be able to accurately calculate the duration of the frame, and will fall back to inserting a single frame with the appropriate duration.  if you export a single-frame movie and do not provide this value, the duration of the frame will be 1/timescale.
+extern NSString *const			AVFallbackFPSKey;
 
-#define				HAPQMAXCHUNKS 8
+#define				HAPQMAXCHUNKS 16
 
 
 
@@ -36,8 +38,8 @@ This class is the main interface for using AVFoundation to encode and output vid
 	NSSize			exportDXTImgSize;	//	'exportImgSize' rounded up to a multiple of 4
 	unsigned int	exportChunkCounts[2];
 	BOOL			exportHighQualityFlag;	//	NO by default, YES if the quality slider is > .8 in hap or hap alpha codecs
-	size_t			exportSliceCount;
-	size_t			exportSliceHeight;
+	size_t			exportSliceCount;	//	1 by default/if slicing is disabled.  if slicing is enabled, this is the # of slices.
+	size_t			exportSliceHeight;	//	calculated using image height + slice count.  the number of rows of pixels in a slice.
 	
 	OSType			encoderInputPxlFmts[2];	//	the encoder wants pixels of a particular format.  this is the format they want.
 	uint32_t		encoderInputPxlFmtBytesPerRow[2];	//	the number of bytes per row in the buffers created to convert to 'encoderInputPxlFmts'
@@ -55,6 +57,7 @@ This class is the main interface for using AVFoundation to encode and output vid
 	BOOL				encoderWaitingToRunOut;	//	set to YES when the user marks this input as finished (the frames that are "in flight" via GCD need to finish up)
 	
 	CMTime				lastEncodedDuration;
+	double				fallbackFPS;	//	one-frame movies are unable to calculate 'lastEncodeDuration', and will fall back to inserting a single frame at this framerate.
 }
 
 /**

@@ -63,7 +63,7 @@
 #define kHapCVPixelFormat_A_RGTC1 'RGA1'
 
 /*		CoreVideo requires us to "register" the DXT pixel format- if this isn't done, the various CV-related resources won't recognize it as a valid pixel format and stuff won't work.  this function only needs to be called once, before you do anything with hap.  the framework does this automatically in the +initialize methods of AVPlayerItemHapDXTOutput and AVAssetWriterHapInput.		*/
-void HapCodecRegisterDXTPixelFormat(unsigned int fmt, short bits_per_pixel, int open_gl_internal_format, unsigned char has_alpha);
+void HapCodecRegisterDXTPixelFormat(OSType fmt, short bits_per_pixel, SInt32 open_gl_internal_format, Boolean has_alpha);
 void HapCodecRegisterYCoCgPixelFormat(void);
 void HapCodecRegisterPixelFormats(void);
 

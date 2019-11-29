@@ -7,11 +7,18 @@
 //
 
 #import "HapInAVFoundation.h"
+
+
+
 @interface AVAssetHapImageGenerator : NSObject
 
 + (AVAssetHapImageGenerator*) assetHapImageGeneratorWithAsset:(AVAsset*)asset;
 
+- (instancetype) initWithAsset:(AVAsset *)n;
+
 - (void) generateCGImagesAsynchronouslyForTimes:(NSArray<NSValue *> *)requestedTimes completionHandler:(AVAssetImageGeneratorCompletionHandler)handler;
+
+@property (assign,readwrite) CGSize maximumSize;
 
 @end
 
