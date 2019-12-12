@@ -77,7 +77,8 @@
 
 - (CGLPixelFormatObj) copyCGLPixelFormatForDisplayMask:(uint32_t)mask	{
 	const CGLPixelFormatAttribute attributes[] = {
-		kCGLPFAOpenGLProfile, kCGLOGLPVersion_Legacy,
+		kCGLPFAOpenGLProfile,
+		(CGLPixelFormatAttribute)kCGLOGLPVersion_Legacy,
 		kCGLPFADoubleBuffer,
 		kCGLPFAAccelerated,
 		kCGLPFAColorSize, 32,
@@ -333,7 +334,7 @@
 		
 		self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(displaySize, self.bounds), currentTransform);
 
-		GLfloat aspect = displaySize.height/displaySize.width;
+		//GLfloat aspect = displaySize.height/displaySize.width;
 		
 		//GLfloat vertexCoords[8] =
 		//{
@@ -408,7 +409,7 @@
 	&& !CGSizeEqualToSize(CGSizeZero, hapImageSize))
 	{
 		
-		glUseProgram([hapTex shaderProgramObject]);
+		glUseProgram((GLuint)[hapTex shaderProgramObject]);
 		for (int i=0; i<[hapTex textureCount]; ++i)	{
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, [hapTex textureNames][i]);
