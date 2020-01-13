@@ -347,8 +347,8 @@
 		
 		glColor4f(1.0, 1.0, 1.0, 1.0);
 		
-		CGSize displaySize = CVImageBufferGetDisplaySize(currentTextureRef);
-		
+		AVPlayerItem		*tmpItem = self.player.currentItem;
+		CGSize				displaySize = [tmpItem presentationSize];
 		self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(displaySize, self.bounds), currentTransform);
 
 		//GLfloat aspect = displaySize.height/displaySize.width;
@@ -415,7 +415,7 @@
 	
 	if (self.currentDXTFrame != nil)	{
 		CGSize		imageSize = NSSizeToCGSize([self.currentDXTFrame imgSize]);
-		if ( !CGSizeEqualToSize(hapImageSize, imageSize) && !CGSizeEqualToSize(CGSizeZero, imageSize)	 )	{
+		if (!CGSizeEqualToSize(CGSizeZero, imageSize)	 )	{
 			hapImageSize = imageSize;
 			self.videoRect = CGRectApplyAffineTransform( AVMakeRectWithAspectRatioInsideRect(hapImageSize, self.bounds), currentTransform);
 		}
