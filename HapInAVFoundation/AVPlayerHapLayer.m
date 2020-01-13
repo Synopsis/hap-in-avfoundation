@@ -35,6 +35,7 @@
 @property (nonatomic, readwrite, getter=isReadyForDisplay) BOOL readyForDisplay;
 @property (readwrite) BOOL useHAP;
 @property (nonatomic, readwrite) CGRect videoRect;
+- (GLuint) glDisplayMaskForAllScreens;
 @end
 
 
@@ -75,7 +76,23 @@
 	[super dealloc];
 }
 
+- (GLuint) glDisplayMaskForAllScreens	{
+	CGError					err = kCGErrorSuccess;
+	CGDirectDisplayID		dspys[10];
+	CGDisplayCount			count = 0;
+	GLuint					glDisplayMask = 0;
+	err = CGGetActiveDisplayList(10,dspys,&count);
+	if (err == kCGErrorSuccess)	{
+		int					i;
+		for (i=0;i<count;++i)
+			glDisplayMask = glDisplayMask | CGDisplayIDToOpenGLDisplayMask(dspys[i]);
+	}
+	return glDisplayMask;
+}
+
 - (CGLPixelFormatObj) copyCGLPixelFormatForDisplayMask:(uint32_t)mask	{
+	//	failure to acquire a display mask that covers all possible screens results in CA crashing
+	GLuint		newMask = [self glDisplayMaskForAllScreens];
 	const CGLPixelFormatAttribute attributes[] = {
 		kCGLPFAOpenGLProfile,
 		(CGLPixelFormatAttribute)kCGLOGLPVersion_Legacy,
@@ -84,7 +101,7 @@
 		kCGLPFAColorSize, 32,
 		kCGLPFADepthSize, 24,
 		kCGLPFANoRecovery,
-		kCGLPFADisplayMask, mask,
+		kCGLPFADisplayMask, newMask,
 		(CGLPixelFormatAttribute)0,
 	};
 	
