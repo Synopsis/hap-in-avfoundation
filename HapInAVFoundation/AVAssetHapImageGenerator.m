@@ -82,7 +82,7 @@
 				
 				NSRect			imgRect = NSMakeRect(0,0,rgbPixelsSize.width,rgbPixelsSize.height);
 				NSRect			canvasRect = NSMakeRect(0,0,self.maximumSize.width,self.maximumSize.height);
-				NSRect			drawRect = [VVSizingTool rectThatFitsRect:imgRect inRect:canvasRect sizingMode:VVSizingModeFit];
+                NSRect			drawRect =   AVMakeRectWithAspectRatioInsideRect(canvasRect.size,imgRect);//[VVSizingTool rectThatFitsRect:imgRect inRect:canvasRect sizingMode:VVSizingModeFit];
 				drawRect.origin = NSMakePoint(0,0);
 				drawRect = NSIntegralRect(drawRect);
 				

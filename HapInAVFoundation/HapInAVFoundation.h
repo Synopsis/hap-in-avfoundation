@@ -24,7 +24,6 @@
 #import "AVAssetWriterHapInput.h"
 #import "AVPlayerHapLayer.h"
 #import "AVAssetHapImageGenerator.h"
-#import "HapPixelBufferTexture.h"
 
 
 
