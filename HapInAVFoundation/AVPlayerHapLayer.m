@@ -10,7 +10,7 @@
 #import "AVPlayerHapLayer.h"
 #import <OpenGL/gl.h>
 #import <OpenGL/glext.h>
-#import "VVSizingTool.h"
+//#import "VVSizingTool.h"
 #import "HapPixelBufferTexture.h"
 
 
